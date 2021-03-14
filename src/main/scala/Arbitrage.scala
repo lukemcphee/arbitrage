@@ -10,7 +10,6 @@ object Arbitrage extends App {
 
   val sc = spark.sparkContext
 
-
   def vertexId(string: String): Long = {
     string.hashCode.toLong
   }
@@ -18,7 +17,6 @@ object Arbitrage extends App {
   def vertexIdPair(string: String): (Long, String) = {
     (string.hashCode.toLong, string)
   }
-
 
   val reverseMappings = Seq("BTC", "USD", "EUR").map(entry => vertexId(entry) -> entry).toMap
 
