@@ -9,12 +9,12 @@ case class CurrencyPair(base: String, quote: String)
 case class Result(body: String, nextStart: LocalDateTime)
 
 object Weekday extends Enumeration {
-  val Minutes = Value(60)
-  val FiveMinutes = Value(300)
-  val FifteenMinutes = Value(900)
-  val OneHour = Value(3600)
-  val SixHours = Value(21600)
-  val Day = Value(86400)
+  val Minutes: Weekday.Value = Value(60)
+  val FiveMinutes: Weekday.Value = Value(300)
+  val FifteenMinutes: Weekday.Value = Value(900)
+  val OneHour: Weekday.Value = Value(3600)
+  val SixHours: Weekday.Value = Value(21600)
+  val Day: Weekday.Value = Value(86400)
 }
 
 class Coinbase(spark: SparkSession) {
