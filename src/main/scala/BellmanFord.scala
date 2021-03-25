@@ -5,9 +5,9 @@ import scala.annotation.tailrec
 case class Reduction(distances: Map[VertexId, Double], previous: Map[VertexId, VertexId])
 
 
-class BellmanFord() {
+class BellmanFord {
 
-  def bellmanFordBasic(source: VertexId, graph: Graph[String, Double]) = {
+  def relaxNonSpark(source: VertexId, graph: Graph[String, Double]) = {
     val verticesCount = graph.vertices.count()
     val edges = graph
       .edges
@@ -19,13 +19,13 @@ class BellmanFord() {
         reduction
       }
       else {
-        relax(passes - 1, relaxGraph(edges, reduction))
+        relax(passes - 1, relaxOnce(edges, reduction))
       }
 
     relax(verticesCount, Reduction(Map(source -> 0d), Map[VertexId, VertexId]()))
   }
 
-  def relaxGraph(edges: Array[Edge[Double]], reduction: Reduction) = {
+  def relaxOnce(edges: Array[Edge[Double]], reduction: Reduction) = {
     edges
       .foldLeft(reduction)((reduction, edge) => {
         val distances = reduction.distances
