@@ -3,33 +3,45 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 
 object Arbitrage extends App {
-  val spark = SparkSession.builder
+
+  private def vertexId(string: String) = string.hashCode.toLong
+
+  private def vertexIdPair(string: String) = (string.hashCode.toLong, string)
+
+  private val spark = SparkSession.builder
     .master("local[*]")
     .appName("Sample App")
     .getOrCreate()
 
-  val sc = spark.sparkContext
+  private val sc = spark.sparkContext
 
-  def vertexId(string: String): Long = {
-    string.hashCode.toLong
-  }
 
-  def vertexIdPair(string: String): (Long, String) = {
-    (string.hashCode.toLong, string)
-  }
+  private val reverseMappings = Seq("BTC", "USD", "EUR").map(entry => vertexId(entry) -> entry).toMap
 
-  val reverseMappings = Seq("BTC", "USD", "EUR").map(entry => vertexId(entry) -> entry).toMap
-
-  val vertices: RDD[(VertexId, String)] =
+  private val vertices: RDD[(VertexId, String)] =
     sc.parallelize(Seq(vertexIdPair("BTC"), vertexIdPair("USD"), vertexIdPair("EUR")))
 
-  val edges: RDD[Edge[Double]] = sc.parallelize(Seq(
-    Edge(vertexId("BTC"), vertexId("USD"), 0),
-    Edge(vertexId("USD"), vertexId("EUR"), 0),
-    Edge(vertexId("USD"), vertexId("GBP"), 0)
+  private val edgesNonNeg: RDD[Edge[Double]] = sc.parallelize(Seq(
+    Edge(vertexId("A"), vertexId("B"), 5),
+    Edge(vertexId("A"), vertexId("D"), 3),
+    Edge(vertexId("B"), vertexId("C"), 3),
+    Edge(vertexId("C"), vertexId("D"), -10)
   ))
 
-  val graph = Graph(vertices, edges)
+  private val edgesWithNeg: RDD[Edge[Double]] = sc.parallelize(Seq(
+    Edge(vertexId("A"), vertexId("B"), 5),
+    Edge(vertexId("A"), vertexId("D"), 3),
+    Edge(vertexId("B"), vertexId("C"), 3),
+    Edge(vertexId("C"), vertexId("D"), -10),
+    Edge(vertexId("D"), vertexId("C"), 4)
+  ))
 
-  new BellmanFord(spark).bellmanFordBasic(graph.vertices.first()._1, graph)
+
+  private val graphWithNoNegativeCycles = Graph(vertices, edgesWithNeg)
+
+  private val bellmanFord = new BellmanFord()
+
+  val relaxedGraph = bellmanFord.bellmanFordBasic(graphWithNoNegativeCycles.vertices.first()._1, graphWithNoNegativeCycles)
+
+  println(relaxedGraph)
 }
