@@ -2,8 +2,11 @@ import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.scalatest.FunSuite
+import com.typesafe.scalalogging.Logger
 
 class BellmanFordTest extends FunSuite {
+
+  val logger = Logger[BellmanFordTest]
 
   private def vertexId(string: String) = string.hashCode.toLong
 
@@ -36,8 +39,9 @@ class BellmanFordTest extends FunSuite {
     val sourceVertexId = graphWithNoNegativeCycles.vertices.first()._1
     val reduction = bellman.relaxNonSpark(sourceVertexId, graphWithNoNegativeCycles)
     val additionalReduction = bellman.relaxOnce(edgesNonNeg.collect(), reduction)
+    logger.info(s"Reduction distances: ${reduction.distances}")
+    logger.info(s"Reduction previous map: ${reduction.previous}")
     assert(reduction === additionalReduction)
-
   }
 
   test("Graph containing negative cycle does change with extra relaxations") {
